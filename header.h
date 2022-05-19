@@ -1,13 +1,13 @@
 #ifndef HEADER_H
 #define HEADER_H
 
-typedef struct vlak {
-	int id;
-	char polaziste[30];
-	char odrediste[30];
-	char vrijemePolaska[6];
-	char vrijemeDolaska[6];
-}VLAK;
+	typedef struct vlak {
+		int id;
+		char polaziste[30];
+		char odrediste[30];
+		char vrijemePolaska[6];
+		char vrijemeDolaska[6];
+	}VLAK;
 
 	int izbornik();
 	void kreiranjeDatoteke();
