@@ -39,9 +39,30 @@ void kreiranjeDatoteke() {
 	fclose(fp);
 }
 
+void pretvaranjeUCapsLock(char string[]) {
+	int i = 0,len=strlen(string);
+
+	for (i = 0; i < len; i++) {
+		if (string[i] >= 'a' && string[i] <= 'z') {
+			string[i] = string[i] - 32;
+		}
+	}
+}
+
+int provjeraUnosa(char string[]) {
+	int provjera = 0;
+
+	for (int i = 0; i < strlen(string); i++) {
+		if ((string[i] < 'A' || string[i]>'Z') && (string[i] < 'a' || string[i]>'z') && (string != '-'))
+			provjera++;
+	}
+
+	return provjera;
+}
 
 
 void dodavanjeVlaka() {
+	int provjera = 0;
 	FILE* fp = NULL;
 	fp = fopen("vlakovi.bin", "rb+");
 
@@ -55,17 +76,37 @@ void dodavanjeVlaka() {
 	VLAK temp;
 	temp.id = brojVlakova + 1;
 	brojac++;
-	getchar();
-	printf("\nUnesite polaziste vlaka: ");
-	scanf(" %30[^\n]", temp.polaziste);
+	do {
+		provjera = 0;
+		printf("\nUnesite polaziste vlaka: ");
+		scanf(" %30[^\n]", temp.polaziste);
+		provjera = provjeraUnosa(temp.polaziste);
+		
+		if(provjera!=0)
+			printf("Pogresan unos.\n");
+	} while (provjera != 0);
+	pretvaranjeUCapsLock(temp.polaziste);
+
 	
-	getchar();
-	printf("Unesite odrediste vlaka: ");
-	scanf(" %30[^\n]", temp.odrediste);
-	printf("Unesite vrijeme polaska vlaka: ");
+	do {
+		provjera = 0;
+		printf("Unesite odrediste vlaka: ");
+		scanf(" %30[^\n]", temp.odrediste);
+		provjera = provjeraUnosa(temp.odrediste);
+
+		if (provjera != 0)
+			printf("Pogresan unos.\n");
+	} while (provjera != 0);
+	pretvaranjeUCapsLock(temp.odrediste);
+
+	printf("Unesite vrijeme polaska vlaka [h:mm]: ");
 	scanf(" %6[^\n]", temp.vrijemePolaska);
-	printf("Unesite vrijeme dolaska vlaka: ");
+
+
+	printf("Unesite vrijeme dolaska vlaka [h:mm]: ");
 	scanf(" %6[^\n]", temp.vrijemeDolaska);
+
+
 	fseek(fp, sizeof(VLAK) * brojVlakova, SEEK_CUR);
 	fwrite(&temp, sizeof(VLAK), 1, fp);
 	rewind(fp);
@@ -141,10 +182,10 @@ void* pretrazivanjeVoznogRedaPolaziste(VLAK* poljeVlakova) {
 
 	printf("Unesite polaziste trazenog vlaka: ");
 	scanf(" %30[^ \n]", trazenoPolaziste);
-	
+
 	system("cls");
 	for (i = 0; i < brojVlakova; i++) {
-		if (strcmp(trazenoPolaziste, (poljeVlakova + i)->polaziste)==0) {
+		if (strcmp(trazenoPolaziste, (poljeVlakova + i)->polaziste) == 0) {
 			if (trigger == 0) {
 				trigger++;
 				printf("  ID\tPolazak\t\tPolaziste\t      Odrediste\t\t  Dolazak\n");
@@ -169,7 +210,7 @@ void brisanjeVlaka(VLAK* poljeVlakova) {
 	int brojac1 = 0;
 	int trazeniVlak;
 	printf("\n---------------------------------------------------------------------------------\n");
-	printf("\nUnesite ID vlaka koji zelite obrisati [upisite 0 za izlazak]\n");
+	printf("\nUnesite ID vlaka koji zelite obrisati [upisite 0 za izlazak, 999 za brisanje svih vlakova]\n");
 	scanf("%d", &trazeniVlak);
 	if (trazeniVlak != 0) {
 		FILE* fp = NULL;
@@ -178,23 +219,34 @@ void brisanjeVlaka(VLAK* poljeVlakova) {
 			perror("Brisanje");
 		}
 
-		rewind(fp);
-		fseek(fp, sizeof(int), SEEK_CUR);
-		for (int i = 0; i < brojVlakova; i++) {
-			if (trazeniVlak != (poljeVlakova + i)->id) {
-				fwrite((poljeVlakova + i), sizeof(VLAK), 1, fp);
-				brojac1++;
+		if(trazeniVlak!=999){
+			rewind(fp);
+			fseek(fp, sizeof(int), SEEK_CUR);
+			for (int i = 0; i < brojVlakova; i++) {
+				if (trazeniVlak != (poljeVlakova + i)->id) {
+					fwrite((poljeVlakova + i), sizeof(VLAK), 1, fp);
+					brojac1++;
+				}
 			}
+			system("cls");
+			printf("Vlak s ID-om %d uspjesno izbrisan.", trazeniVlak);
 		}
-		system("cls");
-		printf("Vlak s ID-om %d uspjesno izbrisan.", trazeniVlak);
+		else {
+			rewind(fp);
+			fseek(fp, sizeof(int), SEEK_CUR);
+			for (int i = 0; i < brojVlakova; i++) {
+				fwrite((poljeVlakova + i), sizeof(VLAK), 1, fp);
+			}
+			system("cls");
+			printf("Svi vlakovi izbrisani.");
+		}
 		rewind(fp);
 		fwrite(&brojac1, sizeof(int), 1, fp);
 		fclose(fp);
 	}
 	else {
 		system("cls");
-		printf("Otkazano brisanje vlakova", trazeniVlak);
+		printf("Brisanje otkazano.");
 	}
 
 
@@ -223,23 +275,23 @@ int izbornikZaPretrazivanje() {
 	static VLAK* poljeVlakova;
 
 	switch (odabir) {
-		case 1:
-			poljeVlakova = (VLAK*)ucitavanjeVlakova();
-			pronadjeniVlak = (VLAK*)pretrazivanjeVoznogRedaID(poljeVlakova);
-			break;
+	case 1:
+		poljeVlakova = (VLAK*)ucitavanjeVlakova();
+		pronadjeniVlak = (VLAK*)pretrazivanjeVoznogRedaID(poljeVlakova);
+		break;
 
-		case 2:
-			poljeVlakova = (VLAK*)ucitavanjeVlakova();
-			pronadjeniVlak = (VLAK*)pretrazivanjeVoznogRedaPolaziste(poljeVlakova);
-			break;
+	case 2:
+		poljeVlakova = (VLAK*)ucitavanjeVlakova();
+		pronadjeniVlak = (VLAK*)pretrazivanjeVoznogRedaPolaziste(poljeVlakova);
+		break;
 
-		case 0:
-			break;
+	case 0:
+		break;
 
-		default:
-			printf("Odabrana opcija ne postoji.");
-			izbornikZaPretrazivanje();
-			break;
+	default:
+		printf("Odabrana opcija ne postoji.");
+		izbornikZaPretrazivanje();
+		break;
 	}
 
 
