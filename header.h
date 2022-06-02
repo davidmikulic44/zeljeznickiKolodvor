@@ -9,12 +9,21 @@
 		char vrijemeDolaska[6];
 	}VLAK;
 
-	int izbornik();
+
+	void* ucitavanjeVlakova();
 	void kreiranjeDatoteke();
+	void pretvaranjeUCapsLock(char string[]);
+	int provjeraUnosaStringa(char string[]);
+	int provjeraUnosaVremena(char string[]);
 	void dodavanjeVlaka(VLAK* poljeVlakova);
-	void ispisVoznogReda(const VLAK* const poljeVlakova);
+	void ispisVoznogReda(VLAK* poljeVlakova);
+	void* pretrazivanjeVoznogRedaID(VLAK* poljeVlakova);
+	void* pretrazivanjeVoznogRedaPolaziste(VLAK* poljeVlakova);
+	void* pretrazivanjeVoznogRedaOdrediste(VLAK* poljeVlakova);
 	void brisanjeVlaka(VLAK* poljeVlakova);
 	int zavrsetakPrograma(VLAK* poljeVlakova);
-	
+	int izbornikZaPretrazivanje();
+	int izbornik();
+
 
 #endif // HEADER_H
