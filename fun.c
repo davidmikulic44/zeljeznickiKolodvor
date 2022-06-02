@@ -14,6 +14,7 @@ void* ucitavanjeVlakova() {
 		return NULL;
 		exit(EXIT_FAILURE);
 	}
+
 	fread(&brojVlakova, sizeof(int), 1, fp);
 	VLAK* poljeVlakova = NULL;
 	poljeVlakova = (VLAK*)calloc(brojVlakova, sizeof(VLAK));
@@ -22,6 +23,7 @@ void* ucitavanjeVlakova() {
 		return NULL;
 		exit(EXIT_FAILURE);
 	}
+
 	fread(poljeVlakova, sizeof(VLAK), brojVlakova, fp);
 	fclose(fp);
 	return poljeVlakova;
@@ -32,7 +34,7 @@ void kreiranjeDatoteke() {
 	fp = fopen("vlakovi.bin", "wb");
 
 	if (fp == NULL) {
-		perror("Kreiranje");
+		perror("Kreiranje datoteke");
 	}
 
 	fwrite(&brojVlakova, sizeof(int), 1, fp);
@@ -50,10 +52,10 @@ void pretvaranjeUCapsLock(char string[]) {
 }
 
 int provjeraUnosaStringa(char string[]) {
-	int i,provjera = 0;
+	int i, provjera = 0;
 
 	for (i = 0; i < strlen(string); i++) {
-		if ((string[i] < 'A' || string[i]>'Z') && (string[i] < 'a' || string[i]>'z') && (string[i]!='-') && (string[i]!=' '))
+		if ((string[i] < 'A' || string[i]>'Z') && (string[i] < 'a' || string[i]>'z') && (string[i] != '-') && (string[i] != ' '))
 			provjera++;
 	}
 
@@ -61,7 +63,7 @@ int provjeraUnosaStringa(char string[]) {
 }
 
 int provjeraUnosaVremena(char string[]) {
-	int i, provjera = 0, len=strlen(string);
+	int i, provjera = 0, len = strlen(string);
 
 	if (len < 4 || len>5)
 		return -1;
@@ -69,7 +71,7 @@ int provjeraUnosaVremena(char string[]) {
 	if (string[0] < '0' || string[0]>'9')
 		return -1;
 
-	if (string[1] >= '0' && string[1] <= '9'){
+	if (string[1] >= '0' && string[1] <= '9') {
 		if (string[0] > '2')
 			return -1;
 
@@ -99,7 +101,7 @@ int provjeraUnosaVremena(char string[]) {
 }
 
 void dodavanjeVlaka(VLAK* poljeVlakova) {
-	int provjera = 0,i;
+	int provjera = 0, i,max=0;
 	FILE* fp = NULL;
 	fp = fopen("vlakovi.bin", "rb+");
 
@@ -111,34 +113,42 @@ void dodavanjeVlaka(VLAK* poljeVlakova) {
 	printf("Trenutni broj vlakova u voznom redu: %d", brojVlakova);
 
 	VLAK temp;
-	
-	if ((poljeVlakova + 0)->id != 1)
+
+	for (i = 0; i <= brojVlakova; i++) {
+		if ((poljeVlakova + i)->id > max)
+			max = (poljeVlakova + i)->id;
+	}
+	++max;
+	temp.id =max;
+
+	/*if ((poljeVlakova + 0)->id != 1)
 		temp.id = 1;
 	else
-		temp.id = brojVlakova + 1;
+		temp.id = brojVlakova + 1;*/
 	brojac++;
 	do {
 		provjera = 0;
 		printf("\nUnesite polaziste vlaka: ");
 		scanf(" %30[^\n]", temp.polaziste);
 
-		if (strcmp(temp.polaziste,"0")==0){
+		if (strcmp(temp.polaziste, "0") == 0) {
 			system("cls");
 			return;
 		}
 		provjera = provjeraUnosaStringa(temp.polaziste);
 
-		if (provjera != 0)
+		if (provjera != 0) 
 			printf("Pogresan unos.\n");
+			
 	} while (provjera != 0);
 	pretvaranjeUCapsLock(temp.polaziste);
-
+	
 
 	do {
 		provjera = 0;
 		printf("Unesite odrediste vlaka: ");
 		scanf(" %30[^\n]", temp.odrediste);
-
+		
 		if (strcmp(temp.odrediste, "0") == 0) {
 			system("cls");
 			return;
@@ -146,8 +156,9 @@ void dodavanjeVlaka(VLAK* poljeVlakova) {
 
 		provjera = provjeraUnosaStringa(temp.odrediste);
 
-		if (provjera != 0)
+		if (provjera != 0) 
 			printf("Pogresan unos.\n");
+		
 	} while (provjera != 0);
 	pretvaranjeUCapsLock(temp.odrediste);
 
@@ -165,6 +176,7 @@ void dodavanjeVlaka(VLAK* poljeVlakova) {
 
 		if (provjera == -1)
 			printf("Pogresan unos.\n");
+
 	} while (provjera == -1);
 
 
@@ -195,7 +207,7 @@ void dodavanjeVlaka(VLAK* poljeVlakova) {
 	printf("Novi vlak uspjesno dodan u vozni red.");
 }
 
-void ispisVoznogReda(const VLAK* const poljeVlakova) {
+void ispisVoznogReda(VLAK* poljeVlakova) {
 	if (poljeVlakova == NULL) {
 		printf("Polje vlakova je prazno");
 		return;
@@ -217,6 +229,13 @@ void ispisVoznogReda(const VLAK* const poljeVlakova) {
 }
 
 void azuriranjeVlaka() {
+	int trazeniID;
+	printf("\nUnesite ID vlaka koji zelite azurirati: ");
+
+	scanf(" %d", &trazeniID);
+
+
+
 
 }
 
@@ -230,7 +249,7 @@ void* pretrazivanjeVoznogRedaID(VLAK* poljeVlakova) {
 	int i, trazeniID;
 
 	printf("Unesite ID trazenog vlaka: ");
-	scanf("%d", &trazeniID);
+	scanf(" %d", &trazeniID);
 	system("cls");
 	for (i = 0; i < brojVlakova; i++) {
 		if (trazeniID == (poljeVlakova + i)->id) {
@@ -244,8 +263,6 @@ void* pretrazivanjeVoznogRedaID(VLAK* poljeVlakova) {
 			return (poljeVlakova + i);
 		}
 	}
-
-
 	return NULL;
 }
 
@@ -324,7 +341,7 @@ void brisanjeVlaka(VLAK* poljeVlakova) {
 
 	printf("\n---------------------------------------------------------------------------------------------------------\n");
 	printf("\nUnesite ID vlaka koji zelite obrisati [upisite 0 za izlazak, -1 za brisanje svih vlakova]\n");
-	scanf("%d", &trazeniVlak);
+	scanf(" %d", &trazeniVlak);
 	if (trazeniVlak != 0) {
 		FILE* fp = NULL;
 		fp = fopen("vlakovi.bin", "wb");
@@ -376,15 +393,15 @@ int zavrsetakPrograma(VLAK* poljeVlakova) {
 int izbornikZaPretrazivanje() {
 	int odabir;
 	printf("\n---------------------------------------------------------------------------------------------------------\n");
-	printf("\t\t      Po cemu zelite pretrazivati: \n\n");
-	printf("\t\t  1 : Po ID-u\n");
-	printf("\t\t  2 : Po polazistu\n");
-	printf("\t\t  3 : Po odredistu\n");
-	printf("\t\t  0 : Izlaz iz izbornika za pretrazivanje\n");
+	printf("\t\t\t\t\tPo cemu zelite pretrazivati? \n\n");
+	printf("\t\t\t\t\t    1 : Po ID-u\n");
+	printf("\t\t\t\t\t    2 : Po polazistu\n");
+	printf("\t\t\t\t\t    3 : Po odredistu\n");
+	printf("\n\t\t\t\t    0 : Izlaz iz izbornika za pretrazivanje\n");
 	printf("---------------------------------------------------------------------------------------------------------\n");
 
 	printf("ODABIR: ");
-	scanf("%d", &odabir);
+	scanf(" %d", &odabir);
 	system("cls");
 
 	static VLAK* pronadjeniVlak;
@@ -436,7 +453,7 @@ int izbornik() {
 	static VLAK* pronadjeniVlak = NULL;
 
 	printf("ODABIR: ");
-	scanf("%d", &odabir);
+	scanf(" %d", &odabir);
 	system("cls");
 	switch (odabir) {
 	case 0:
@@ -460,6 +477,15 @@ int izbornik() {
 		ispisVoznogReda(poljeVlakova);
 		break;
 
+	/*case 3:
+		if (poljeVlakova != NULL) {
+			free(poljeVlakova);
+			poljeVlakova = NULL;
+		}
+		poljeVlakova = (VLAK*)ucitavanjeVlakova();
+		ispisVoznogReda(poljeVlakova);
+		azuriranjeVlaka();*/
+
 	case 4:
 		izbornikZaPretrazivanje();
 		break;
@@ -471,7 +497,6 @@ int izbornik() {
 		}
 		poljeVlakova = (VLAK*)ucitavanjeVlakova();
 		ispisVoznogReda(poljeVlakova);
-
 
 		if (poljeVlakova == NULL) {
 			printf("Nema unesenih vlakova u vozni red.");
