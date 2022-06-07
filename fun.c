@@ -35,6 +35,7 @@ void kreiranjeDatoteke() {
 
 	if (fp == NULL) {
 		perror("Kreiranje datoteke");
+		exit(EXIT_FAILURE);
 	}
 
 	fwrite(&brojVlakova, sizeof(int), 1, fp);
@@ -52,9 +53,9 @@ void pretvaranjeUCapsLock(char string[]) {
 }
 
 int provjeraUnosaStringa(char string[]) {
-	int i, provjera = 0;
+	unsigned int i, provjera = 0, len = strlen(string);
 
-	for (i = 0; i < strlen(string); i++) {
+	for (i = 0; i < len; i++) {
 		if ((string[i] < 'A' || string[i]>'Z') && (string[i] < 'a' || string[i]>'z') && (string[i] != '-') && (string[i] != ' '))
 			provjera++;
 	}
@@ -63,7 +64,7 @@ int provjeraUnosaStringa(char string[]) {
 }
 
 int provjeraUnosaVremena(char string[]) {
-	int i, provjera = 0, len = strlen(string);
+	unsigned int i, provjera = 0, len = strlen(string);
 
 	if (len < 4 || len>5)
 		return -1;
@@ -85,7 +86,7 @@ int provjeraUnosaVremena(char string[]) {
 	if (string[len - 2] < '0' || string[len - 2]>'5')
 		return -1;
 
-	for (i = 0; i < strlen(string); i++) {
+	for (i = 0; i < len; i++) {
 		if (string[i] < '0' || string[i]>'9') {
 			if (string[i] != ':')
 				return -1;
@@ -101,7 +102,7 @@ int provjeraUnosaVremena(char string[]) {
 }
 
 void dodavanjeVlaka(VLAK* poljeVlakova) {
-	int provjera = 0, i,max=0;
+	int provjera = 0, i, max = 0;
 	FILE* fp = NULL;
 	fp = fopen("vlakovi.bin", "rb+");
 
@@ -114,17 +115,8 @@ void dodavanjeVlaka(VLAK* poljeVlakova) {
 
 	VLAK temp;
 
-	for (i = 0; i <= brojVlakova; i++) {
-		if ((poljeVlakova + i)->id > max)
-			max = (poljeVlakova + i)->id;
-	}
-	++max;
-	temp.id =max;
-
-	/*if ((poljeVlakova + 0)->id != 1)
-		temp.id = 1;
-	else
-		temp.id = brojVlakova + 1;*/
+	temp.id = brojVlakova+1;
+	
 	brojac++;
 	do {
 		provjera = 0;
@@ -137,18 +129,18 @@ void dodavanjeVlaka(VLAK* poljeVlakova) {
 		}
 		provjera = provjeraUnosaStringa(temp.polaziste);
 
-		if (provjera != 0) 
+		if (provjera != 0)
 			printf("Pogresan unos.\n");
-			
+
 	} while (provjera != 0);
 	pretvaranjeUCapsLock(temp.polaziste);
-	
+
 
 	do {
 		provjera = 0;
 		printf("Unesite odrediste vlaka: ");
 		scanf(" %30[^\n]", temp.odrediste);
-		
+
 		if (strcmp(temp.odrediste, "0") == 0) {
 			system("cls");
 			return;
@@ -156,9 +148,9 @@ void dodavanjeVlaka(VLAK* poljeVlakova) {
 
 		provjera = provjeraUnosaStringa(temp.odrediste);
 
-		if (provjera != 0) 
+		if (provjera != 0)
 			printf("Pogresan unos.\n");
-		
+
 	} while (provjera != 0);
 	pretvaranjeUCapsLock(temp.odrediste);
 
@@ -347,6 +339,7 @@ void brisanjeVlaka(VLAK* poljeVlakova) {
 		fp = fopen("vlakovi.bin", "wb");
 		if (fp == NULL) {
 			perror("Brisanje");
+			exit(EXIT_FAILURE);
 		}
 
 		if (trazeniVlak != -1) {
@@ -397,6 +390,7 @@ int izbornikZaPretrazivanje() {
 	printf("\t\t\t\t\t    1 : Po ID-u\n");
 	printf("\t\t\t\t\t    2 : Po polazistu\n");
 	printf("\t\t\t\t\t    3 : Po odredistu\n");
+	printf("\t\t\t\t\t    4 : Po polazistu i odredistu\n");
 	printf("\n\t\t\t\t    0 : Izlaz iz izbornika za pretrazivanje\n");
 	printf("---------------------------------------------------------------------------------------------------------\n");
 
@@ -461,10 +455,10 @@ int izbornik() {
 		break;
 
 	case 1:
-		ucitavanjeVlakova();
 		if (brojVlakova == 0) {
 			kreiranjeDatoteke();
 		}
+		ucitavanjeVlakova();
 		dodavanjeVlaka(poljeVlakova);
 		break;
 
@@ -477,14 +471,14 @@ int izbornik() {
 		ispisVoznogReda(poljeVlakova);
 		break;
 
-	/*case 3:
-		if (poljeVlakova != NULL) {
-			free(poljeVlakova);
-			poljeVlakova = NULL;
-		}
-		poljeVlakova = (VLAK*)ucitavanjeVlakova();
-		ispisVoznogReda(poljeVlakova);
-		azuriranjeVlaka();*/
+		/*case 3:
+			if (poljeVlakova != NULL) {
+				free(poljeVlakova);
+				poljeVlakova = NULL;
+			}
+			poljeVlakova = (VLAK*)ucitavanjeVlakova();
+			ispisVoznogReda(poljeVlakova);
+			azuriranjeVlaka();*/
 
 	case 4:
 		izbornikZaPretrazivanje();
