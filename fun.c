@@ -7,6 +7,11 @@
 static int brojVlakova = 0;
 static int brojac = 0;
 
+int zavrsetakPrograma(VLAK* poljeVlakova) {
+	free(poljeVlakova);
+	return 0;
+}
+
 void* ucitavanjeVlakova() {
 	FILE* fp = fopen("vlakovi.bin", "rb");
 	if (fp == NULL) {
@@ -115,8 +120,16 @@ void dodavanjeVlaka(VLAK* poljeVlakova) {
 
 	VLAK temp;
 
-	temp.id = brojVlakova+1;
-	
+	if (brojVlakova == 0)
+		temp.id = 1;
+	else{
+		max = 0;
+		for (i = 0; i < brojVlakova; i++) {
+			if ((poljeVlakova + i)->id > max)
+				max = (poljeVlakova + i)->id;
+		}
+		temp.id = max+1;
+	}
 	brojac++;
 	do {
 		provjera = 0;
@@ -220,52 +233,52 @@ void ispisVoznogReda(VLAK* poljeVlakova) {
 	}
 }
 
-void azuriranjeVlaka() {
-	int trazeniID;
-	printf("\nUnesite ID vlaka koji zelite azurirati: ");
 
-	scanf(" %d", &trazeniID);
-
-
-
-
-}
-
-
-void* pretrazivanjeVoznogRedaID(VLAK* poljeVlakova) {
+void* pretrazivanjeVoznogRedaID(VLAK* poljeVlakova) {	//Binarno pretrazivanje
 	if (poljeVlakova == NULL) {
 		printf("Polje vlakova je prazno");
 		return NULL;
 	}
-
-	int i, trazeniID;
+	int dg = 0, gg = brojVlakova - 1, s = -1, trazeniId;
 
 	printf("Unesite ID trazenog vlaka: ");
-	scanf(" %d", &trazeniID);
+	scanf(" %d", &trazeniId);
 	system("cls");
-	for (i = 0; i < brojVlakova; i++) {
-		if (trazeniID == (poljeVlakova + i)->id) {
+	
+
+	while (dg <= gg) {
+		s = (dg + gg) / 2;
+		if ((poljeVlakova + s)->id == trazeniId) {
 			printf("  ID\tPolazak\t\t\t   Polaziste\t\t\t   Odrediste\t\t\tDolazak\n");
 			printf("---------------------------------------------------------------------------------------------------------");
 
 			printf("\n  %2d\t%5s\t\t%20s\t\t%20s\t\t\t  %5s",
-				(poljeVlakova + i)->id, (poljeVlakova + i)->vrijemePolaska,
-				(poljeVlakova + i)->polaziste, (poljeVlakova + i)->odrediste,
-				(poljeVlakova + i)->vrijemeDolaska);
-			return (poljeVlakova + i);
+				(poljeVlakova + s)->id, (poljeVlakova + s)->vrijemePolaska,
+				(poljeVlakova + s)->polaziste, (poljeVlakova + s)->odrediste,
+				(poljeVlakova + s)->vrijemeDolaska);
+
+			return (poljeVlakova + s);
 		}
+		else if ((poljeVlakova + s)->id > trazeniId)
+			gg = s - 1;
+		else
+			dg = s + 1;
+
 	}
+
 	return NULL;
 }
 
-void* pretrazivanjeVoznogRedaPolaziste(VLAK* poljeVlakova) {
+
+
+void* pretrazivanjeVoznogRedaPolaziste(VLAK* poljeVlakova) { //Linearno pretrazivanje
 	if (poljeVlakova == NULL) {
 		printf("Polje vlakova je prazno");
 		return NULL;
 	}
 
 	char trazenoPolaziste[30];
-	int i, provjera = 0;
+	int i, provjera = 0,brojac=0;
 
 	printf("Unesite polaziste trazenog vlaka: ");
 	scanf(" %30[^\n]", trazenoPolaziste);
@@ -286,12 +299,13 @@ void* pretrazivanjeVoznogRedaPolaziste(VLAK* poljeVlakova) {
 				(poljeVlakova + i)->vrijemeDolaska);
 		}
 	}
+	
 	if (provjera == 0)
 		printf("Nije pronadjen nijedan vlak s polazistem '%s'.", trazenoPolaziste);
 	return NULL;
 }
 
-void* pretrazivanjeVoznogRedaOdrediste(VLAK* poljeVlakova) {
+void* pretrazivanjeVoznogRedaOdrediste(VLAK* poljeVlakova) { //Linearno pretrazivanje
 	if (poljeVlakova == NULL) {
 		printf("Polje vlakova je prazno");
 		return NULL;
@@ -324,9 +338,6 @@ void* pretrazivanjeVoznogRedaOdrediste(VLAK* poljeVlakova) {
 	return NULL;
 }
 
-void sortiranjeVoznogReda() {
-
-}
 
 void brisanjeVlaka(VLAK* poljeVlakova) {
 	int i, trazeniVlak, brojac1 = 0;
@@ -375,12 +386,84 @@ void brisanjeVlaka(VLAK* poljeVlakova) {
 		printf("Brisanje otkazano.");
 	}
 
-
 }
 
-int zavrsetakPrograma(VLAK* poljeVlakova) {
-	free(poljeVlakova);
-	return 0;
+void zamjena(VLAK* veci, VLAK* manji) {
+	VLAK temp;
+
+	temp = *manji;
+	*manji = *veci;
+	*veci = temp;
+}
+
+void sortIdUzlazno(VLAK* poljeVlakova) {
+	int min = -1, i, j;
+
+	for (i = 0; i < brojVlakova - 1; i++) {
+		min = i;
+
+		for (j = i + 1; j < brojVlakova; j++) {
+			if ((poljeVlakova + i)->id > (poljeVlakova + j)->id)
+				min = j;
+		}
+		zamjena((poljeVlakova + i), (poljeVlakova + min));
+	}
+	ispisVoznogReda(poljeVlakova);
+}
+
+void sortIdSilazno(VLAK* poljeVlakova) {
+	int min = -1,i,j;
+
+	for (i = 0; i < brojVlakova - 1; i++) {
+		min = i;
+
+		for (j = i + 1; j < brojVlakova; j++) {
+			if ((poljeVlakova + i)->id < (poljeVlakova + j)->id)
+				min = j;
+		}
+		zamjena((poljeVlakova + i), (poljeVlakova + min));
+	}
+	ispisVoznogReda(poljeVlakova);
+}
+
+
+
+int izbornikZaSortiranje() {
+	int odabir;
+	printf("\n---------------------------------------------------------------------------------------------------------\n");
+	printf("\t\t\t\t\tOdaberite nacin sortiranja \n\n");
+	printf("\t\t\t\t\t    1 : Po ID-u (uzlazno)\n");
+	printf("\t\t\t\t\t    2 : Po ID-u (silazno)\n");
+	printf("\n\t\t\t\t    0 : Izlaz iz izbornika za sortiranje\n");
+	printf("---------------------------------------------------------------------------------------------------------\n");
+
+	printf("ODABIR: ");
+	scanf(" %d", &odabir);
+	system("cls");
+
+	static VLAK* poljeVlakova;
+
+	switch (odabir) {
+	case 0:
+		break;
+
+	case 1:
+		poljeVlakova = (VLAK*)ucitavanjeVlakova();
+		sortIdUzlazno(poljeVlakova);
+		break;
+
+	case 2:
+		poljeVlakova = (VLAK*)ucitavanjeVlakova();
+		sortIdSilazno(poljeVlakova);
+		break;
+
+	default:
+		printf("Odabrana opcija ne postoji.");
+		izbornikZaSortiranje();
+		break;
+	}
+
+	return odabir;
 }
 
 int izbornikZaPretrazivanje() {
@@ -402,6 +485,9 @@ int izbornikZaPretrazivanje() {
 	static VLAK* poljeVlakova;
 
 	switch (odabir) {
+	case 0:
+		break;
+
 	case 1:
 		poljeVlakova = (VLAK*)ucitavanjeVlakova();
 		pronadjeniVlak = (VLAK*)pretrazivanjeVoznogRedaID(poljeVlakova);
@@ -417,8 +503,7 @@ int izbornikZaPretrazivanje() {
 		pronadjeniVlak = (VLAK*)pretrazivanjeVoznogRedaOdrediste(poljeVlakova);
 		break;
 
-	case 0:
-		break;
+	
 
 	default:
 		printf("Odabrana opcija ne postoji.");
@@ -436,10 +521,9 @@ int izbornik() {
 	printf("\t\t\t\t      Odaberite zeljenu opciju: \n\n");
 	printf("\t\t\t\t  1 : Dodajavanje vlaka u vozni red\n");
 	printf("\t\t\t\t  2 : Ispisivanje voznog reda\n");
-	printf("\t\t\t\t  3 : Azuriranje postojeceg vlaka\n");
-	printf("\t\t\t\t  4 : Pretrazivanje voznog reda\n");
-	printf("\t\t\t\t  5 : Sortiranje voznog reda\n");
-	printf("\t\t\t\t  6 : Brisanje vlaka iz voznog reda\n\n");
+	printf("\t\t\t\t  3 : Pretrazivanje voznog reda\n");
+	printf("\t\t\t\t  4 : Sortiranje voznog reda\n");
+	printf("\t\t\t\t  5 : Brisanje vlaka iz voznog reda\n\n");
 	printf("\t\t\t\t  0 : Izlaz iz programa\n");
 	printf("---------------------------------------------------------------------------------------------------------\n");
 
@@ -471,20 +555,15 @@ int izbornik() {
 		ispisVoznogReda(poljeVlakova);
 		break;
 
-		/*case 3:
-			if (poljeVlakova != NULL) {
-				free(poljeVlakova);
-				poljeVlakova = NULL;
-			}
-			poljeVlakova = (VLAK*)ucitavanjeVlakova();
-			ispisVoznogReda(poljeVlakova);
-			azuriranjeVlaka();*/
-
-	case 4:
+	case 3:
 		izbornikZaPretrazivanje();
 		break;
 
-	case 6:
+	case 4:
+		izbornikZaSortiranje();
+		break;
+
+	case 5:
 		if (poljeVlakova != NULL) {
 			free(poljeVlakova);
 			poljeVlakova = NULL;
