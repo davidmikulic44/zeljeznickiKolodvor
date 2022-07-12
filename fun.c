@@ -62,10 +62,10 @@ int provjeraUnosaStringa(char string[]) {
 
 	for (i = 0; i < len; i++) {
 		if ((string[i] < 'A' || string[i]>'Z') && (string[i] < 'a' || string[i]>'z') && (string[i] != '-') && (string[i] != ' '))
-			provjera++;
+			return -1;
 	}
 
-	return provjera;
+	return 0;
 }
 
 int provjeraUnosaVremena(char string[]) {
@@ -95,15 +95,10 @@ int provjeraUnosaVremena(char string[]) {
 		if (string[i] < '0' || string[i]>'9') {
 			if (string[i] != ':')
 				return -1;
-			if (string[i] == ':')
-				provjera++;
 		}
 	}
 
-	if (provjera == 0 || provjera > 1)
-		provjera = -1;
-
-	return provjera;
+	return 0;
 }
 
 void dodavanjeVlaka(VLAK* poljeVlakova) {
@@ -122,15 +117,18 @@ void dodavanjeVlaka(VLAK* poljeVlakova) {
 
 	if (brojVlakova == 0)
 		temp.id = 1;
-	else{
-		max = 0;
+	else{			//trazenje najveceg ID-a vlaka
+		max = -1, i=0;
 		for (i = 0; i < brojVlakova; i++) {
 			if ((poljeVlakova + i)->id > max)
 				max = (poljeVlakova + i)->id;
 		}
 		temp.id = max+1;
 	}
+	//temp.id = brojVlakova + 1;
+
 	brojac++;
+
 	do {
 		provjera = 0;
 		printf("\nUnesite polaziste vlaka: ");
@@ -142,10 +140,10 @@ void dodavanjeVlaka(VLAK* poljeVlakova) {
 		}
 		provjera = provjeraUnosaStringa(temp.polaziste);
 
-		if (provjera != 0)
+		if (provjera == -1)
 			printf("Pogresan unos.\n");
 
-	} while (provjera != 0);
+	} while (provjera == -1);
 	pretvaranjeUCapsLock(temp.polaziste);
 
 
@@ -161,10 +159,10 @@ void dodavanjeVlaka(VLAK* poljeVlakova) {
 
 		provjera = provjeraUnosaStringa(temp.odrediste);
 
-		if (provjera != 0)
+		if (provjera == -1)
 			printf("Pogresan unos.\n");
 
-	} while (provjera != 0);
+	} while (provjera == -1);
 	pretvaranjeUCapsLock(temp.odrediste);
 
 	do {
@@ -355,7 +353,7 @@ void brisanjeVlaka(VLAK* poljeVlakova) {
 
 		if (trazeniVlak != -1) {
 			rewind(fp);
-			fseek(fp, sizeof(int), SEEK_CUR);
+			fseek(fp, sizeof(int), SEEK_SET);
 			for (i = 0; i < brojVlakova; i++) {
 				if (trazeniVlak != (poljeVlakova + i)->id) {
 					fwrite((poljeVlakova + i), sizeof(VLAK), 1, fp);
@@ -370,7 +368,7 @@ void brisanjeVlaka(VLAK* poljeVlakova) {
 		}
 		else {
 			rewind(fp);
-			fseek(fp, sizeof(int), SEEK_CUR);
+			fseek(fp, sizeof(int), SEEK_SET);
 			for (int i = 0; i < brojVlakova; i++) {
 				fwrite((poljeVlakova + i), sizeof(VLAK), 1, fp);
 			}
@@ -504,7 +502,6 @@ int izbornikZaPretrazivanje() {
 		break;
 
 	
-
 	default:
 		printf("Odabrana opcija ne postoji.");
 		izbornikZaPretrazivanje();
@@ -516,7 +513,13 @@ int izbornikZaPretrazivanje() {
 }
 
 int izbornik() {
-	int odabir;
+	int odabir = 0;
+	static VLAK* poljeVlakova = NULL;
+	static VLAK* pronadjeniVlak = NULL;
+	FILE* fp = NULL;
+	fp = fopen("vlakovi.bin", "rb");
+	fread(&brojVlakova, sizeof(int), 1, fp);
+
 	printf("\n---------------------------------------------------------------------------------------------------------\n");
 	printf("\t\t\t\t      Odaberite zeljenu opciju: \n\n");
 	printf("\t\t\t\t  1 : Dodajavanje vlaka u vozni red\n");
@@ -527,13 +530,13 @@ int izbornik() {
 	printf("\t\t\t\t  0 : Izlaz iz programa\n");
 	printf("---------------------------------------------------------------------------------------------------------\n");
 
-	static VLAK* poljeVlakova = NULL;
-	static VLAK* pronadjeniVlak = NULL;
-
 	printf("ODABIR: ");
+	
 	scanf(" %d", &odabir);
 	system("cls");
+	
 	switch (odabir) {
+
 	case 0:
 		zavrsetakPrograma(poljeVlakova);
 		break;
@@ -542,11 +545,17 @@ int izbornik() {
 		if (brojVlakova == 0) {
 			kreiranjeDatoteke();
 		}
-		ucitavanjeVlakova();
+		if (poljeVlakova != NULL) {
+			free(poljeVlakova);
+			poljeVlakova = NULL;
+		}
+		poljeVlakova = (VLAK*)ucitavanjeVlakova();
+		fclose(fp);
 		dodavanjeVlaka(poljeVlakova);
 		break;
 
 	case 2:
+		fclose(fp);
 		if (poljeVlakova != NULL) {
 			free(poljeVlakova);
 			poljeVlakova = NULL;
@@ -556,14 +565,17 @@ int izbornik() {
 		break;
 
 	case 3:
+		fclose(fp);
 		izbornikZaPretrazivanje();
 		break;
 
 	case 4:
+		fclose(fp);
 		izbornikZaSortiranje();
 		break;
 
 	case 5:
+		fclose(fp);
 		if (poljeVlakova != NULL) {
 			free(poljeVlakova);
 			poljeVlakova = NULL;
@@ -577,11 +589,12 @@ int izbornik() {
 		}
 		brisanjeVlaka(poljeVlakova);
 		break;
-
+		
 	default:
 		printf("Odabrana opcija ne postoji.");
 		break;
 	}
+
 
 	return odabir;
 
